@@ -16,7 +16,7 @@ type ProductTestSuite struct {
 	// Вспомогательные параметры
 	ctx     context.Context
 	logger  log.Logger
-	service Service
+	useCase UseCase
 
 	// Входные параметры
 	create dto.CreateProduct
@@ -28,7 +28,8 @@ type ProductTestSuite struct {
 	products []dto.Product
 
 	// Служебные параметры
-	mock *Mockrepository
+	productMock  *MockproductService
+	categoryMock *MockcategoryService
 }
 
 func TestSuiteCreate(t *testing.T) {
@@ -57,13 +58,14 @@ func (s *ProductTestSuite) setupMock(
 	controller *gomock.Controller,
 ) *ProductTestSuite {
 
-	s.mock = NewMockrepository(controller)
+	s.productMock = NewMockproductService(controller)
+	s.categoryMock = NewMockcategoryService(controller)
 
 	return s
 }
 
 func (s *ProductTestSuite) setupUseCase() *ProductTestSuite {
-	s.service = New(s.mock, s.logger)
+	s.useCase = New(s.productMock, s.categoryMock, s.logger)
 
 	return s
 }
@@ -136,87 +138,133 @@ func (s *ProductTestSuite) setupCategory(
 }
 
 func (s *ProductTestSuite) TestCreateSuccessful() {
-	s.mock.
+	s.categoryMock.
+		EXPECT().
+		GetById(s.ctx, s.create.CategoryId).
+		Return(s.category, nil).
+		Times(1)
+
+	s.productMock.
 		EXPECT().
 		Create(s.ctx, s.create, s.category).
 		Return(1, nil)
 
-	productId, err := s.service.Create(s.ctx, s.create, s.category)
+	productId, err := s.useCase.Create(s.ctx, s.create)
 
 	s.NoError(err)
 	s.Equal(1, productId)
 }
 
-func (s *ProductTestSuite) TestGetSuccessful() {
-	s.mock.
-		EXPECT().
-		Get(s.ctx, s.get).
-		Return(s.products, nil)
-
-	products, err := s.service.Get(s.ctx, s.get)
-
-	s.NoError(err)
-	s.Equal(s.products, products)
-}
-
-func (s *ProductTestSuite) TestGetByIdSuccessful() {
-	s.mock.
-		EXPECT().
-		GetById(s.ctx, s.product.ID).
-		Return(s.product, nil)
-
-	product, err := s.service.GetById(s.ctx, s.product.ID)
-
-	s.NoError(err)
-	s.Equal(s.product, product)
-}
-
-func (s *ProductTestSuite) TestGetByCategoryIdSuccessful() {
-	s.mock.
-		EXPECT().
-		GetByCategoryId(s.ctx, s.get, s.category).
-		Return(s.products, nil).
-		Times(1)
-
-	products, err := s.service.GetByCategoryId(s.ctx, s.get, s.category)
-
-	s.NoError(err)
-	s.Equal(s.products, products)
-}
-
-func (s *ProductTestSuite) TestUpdateSuccessful() {
-	s.mock.
-		EXPECT().
-		GetById(s.ctx, s.product.ID).
-		Return(s.product, nil)
-
-	s.mock.
-		EXPECT().
-		Update(s.ctx, s.update, s.product, s.category).
-		Return(s.product.ID, nil).
-		Times(1)
-
-	productId, err := s.service.Update(s.ctx, s.update, s.category)
-
-	s.NoError(err)
-	s.Equal(1, productId)
-}
-
-func (s *ProductTestSuite) TestUpdateFailure() {
+func (s *ProductTestSuite) TestCreateFailed() {
 	const (
-		expectedNotFoundErrorMsg = "product not found"
+		expectedNotFoundErrorMsg = "category not found"
 	)
 
 	var (
 		expectedError = errors.ErrNotFound.New(expectedNotFoundErrorMsg)
 	)
 
-	s.mock.
+	s.categoryMock.
 		EXPECT().
-		GetById(s.ctx, s.product.ID).
-		Return(dto.Product{}, expectedError)
+		GetById(s.ctx, s.create.CategoryId).
+		Return(dto.Category{}, expectedError).
+		Times(1)
 
-	productId, err := s.service.Update(s.ctx, s.update, s.category)
+	productId, err := s.useCase.Create(s.ctx, s.create)
+
+	s.NotNil(err)
+	s.Equal(expectedError.Error(), err.Error())
+	s.Equal(0, productId)
+}
+
+func (s *ProductTestSuite) TestGetSuccessful() {
+	s.productMock.
+		EXPECT().
+		Get(s.ctx, s.get).
+		Return(s.products, nil)
+
+	products, err := s.useCase.Get(s.ctx, s.get)
+
+	s.NoError(err)
+	s.Equal(s.products, products)
+}
+
+func (s *ProductTestSuite) TestGetByCategoryIdSuccessful() {
+	s.categoryMock.
+		EXPECT().
+		GetById(s.ctx, s.create.CategoryId).
+		Return(s.category, nil).
+		Times(1)
+
+	s.productMock.
+		EXPECT().
+		GetByCategoryId(s.ctx, s.get, s.category).
+		Return(s.products, nil).
+		Times(1)
+
+	products, err := s.useCase.GetByCategoryId(s.ctx, s.get, s.create.CategoryId)
+
+	s.NoError(err)
+	s.Equal(s.products, products)
+}
+
+func (s *ProductTestSuite) TestGetByCategoryIdFailed() {
+	const (
+		expectedNotFoundErrorMsg = "category not found"
+	)
+
+	var (
+		expectedError = errors.ErrNotFound.New(expectedNotFoundErrorMsg)
+	)
+
+	s.categoryMock.
+		EXPECT().
+		GetById(s.ctx, s.create.CategoryId).
+		Return(dto.Category{}, expectedError).
+		Times(1)
+
+	products, err := s.useCase.GetByCategoryId(s.ctx, s.get, s.create.CategoryId)
+
+	s.NotNil(err)
+	s.Equal(expectedError.Error(), err.Error())
+	s.Equal([]dto.Product{}, products)
+}
+
+func (s *ProductTestSuite) TestUpdateSuccessful() {
+	s.categoryMock.
+		EXPECT().
+		GetById(s.ctx, s.update.NewCategoryId).
+		Return(s.category, nil).
+		Times(1)
+
+	s.productMock.
+		EXPECT().
+		Update(s.ctx, s.update, s.category).
+		Return(s.product.ID, nil).
+		Times(1)
+
+	productId, err := s.useCase.Update(s.ctx, s.update)
+
+	s.NoError(err)
+	s.Equal(1, productId)
+}
+
+func (s *ProductTestSuite) TestUpdateCategoryFailed() {
+	const (
+		expectedNotFoundErrorMsg = "category not found"
+	)
+
+	var (
+		expectedError = errors.ErrNotFound.New(expectedNotFoundErrorMsg)
+	)
+
+	s.categoryMock.
+		EXPECT().
+		GetById(s.ctx, s.update.NewCategoryId).
+		Return(dto.Category{}, expectedError).
+		Times(1)
+
+	productId, err := s.useCase.Update(s.ctx, s.update)
 
 	s.NotNil(err)
 	s.Equal(expectedError.Error(), err.Error())
@@ -224,42 +272,14 @@ func (s *ProductTestSuite) TestUpdateFailure() {
 }
 
 func (s *ProductTestSuite) TestDeleteSuccessful() {
-	s.mock.
+	s.productMock.
 		EXPECT().
-		GetById(s.ctx, s.product.ID).
-		Return(s.product, nil).
-		Times(1)
-
-	s.mock.
-		EXPECT().
-		Delete(s.ctx, s.product).
+		Delete(s.ctx, s.product.ID).
 		Return(s.product.ID, nil).
 		Times(1)
 
-	productId, err := s.service.Delete(s.ctx, s.product.ID)
+	productId, err := s.useCase.Delete(s.ctx, s.product.ID)
 
 	s.NoError(err)
 	s.Equal(1, productId)
-}
-
-func (s *ProductTestSuite) TestDeleteFailure() {
-	const (
-		expectedNotFoundErrorMsg = "product not found"
-	)
-
-	var (
-		expectedError = errors.ErrNotFound.New(expectedNotFoundErrorMsg)
-	)
-
-	s.mock.
-		EXPECT().
-		GetById(s.ctx, s.product.ID).
-		Return(dto.Product{}, expectedError).
-		Times(1)
-
-	productId, err := s.service.Delete(s.ctx, s.product.ID)
-
-	s.NotNil(err)
-	s.Equal(expectedError.Error(), err.Error())
-	s.Equal(0, productId)
 }
