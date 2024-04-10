@@ -14,19 +14,19 @@ type Handlify interface {
 
 func New(
 	pathPrefix string,
-) *Router {
+) Router {
 
 	r := mux.NewRouter().
 		StrictSlash(false).
 		PathPrefix(pathPrefix).
 		Subrouter()
 
-	return &Router{
+	return Router{
 		router: r,
 	}
 }
 
-func (r *Router) Handle(
+func (r Router) Handle(
 	routes map[string]Handlify,
 ) {
 
@@ -36,4 +36,4 @@ func (r *Router) Handle(
 	}
 }
 
-func (r *Router) Router() *mux.Router { return r.router }
+func (r Router) Router() *mux.Router { return r.router }

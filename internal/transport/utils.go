@@ -22,6 +22,9 @@ var defaultErrorHttpCodes = map[uint32]int{
 	errors.ErrInternal.TypeId:      http.StatusInternalServerError,
 	errors.ErrAlreadyExists.TypeId: http.StatusConflict,
 	errors.ErrNotFound.TypeId:      http.StatusNotFound,
+	errors.ErrInvalid.TypeId:       http.StatusBadRequest,
+	errors.ErrExpired.TypeId:       http.StatusUnauthorized,
+	errors.ErrInvalidToken.TypeId:  http.StatusInternalServerError,
 }
 
 func ErrorToHttpResponse(

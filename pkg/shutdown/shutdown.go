@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/jackvonhouse/enrichment/pkg/log"
+	"github.com/jackvonhouse/product-catalog/pkg/log"
 )
 
 type Shutdownify interface {
