@@ -6,12 +6,13 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jackvonhouse/product-catalog/internal/dto"
 	"github.com/jackvonhouse/product-catalog/internal/transport"
+	"github.com/jackvonhouse/product-catalog/internal/transport/middleware"
 	"github.com/jackvonhouse/product-catalog/pkg/log"
 	"net/http"
 	"time"
 )
 
-type useCase interface {
+type productUseCase interface {
 	Create(context.Context, dto.CreateProduct) (int, error)
 
 	Get(context.Context, dto.GetProduct) ([]dto.Product, error)
@@ -22,20 +23,29 @@ type useCase interface {
 	Delete(context.Context, int) (int, error)
 }
 
-type Transport struct {
-	useCase useCase
+type useCaseAccessToken interface {
+	Verify(context.Context, string) error
+}
 
+type Transport struct {
+	product     productUseCase
+	accessToken useCaseAccessToken
+
+	mw     middleware.Middleware
 	logger log.Logger
 }
 
 func New(
-	useCase useCase,
+	product productUseCase,
+	accessToken useCaseAccessToken,
 	logger log.Logger,
 ) Transport {
 
 	return Transport{
-		useCase: useCase,
-		logger:  logger.WithField("unit", "product"),
+		product:     product,
+		accessToken: accessToken,
+		mw:          middleware.New(accessToken, logger),
+		logger:      logger.WithField("unit", "product"),
 	}
 }
 
@@ -43,20 +53,23 @@ func (t Transport) Handle(
 	router *mux.Router,
 ) {
 
-	router.HandleFunc("", t.Create).
+	authorizedOnly := router.PathPrefix("").Subrouter()
+	authorizedOnly.Use(t.mw.AuthorizedOnly)
+
+	authorizedOnly.HandleFunc("", t.Create).
 		Methods(http.MethodPost)
 
-	router.HandleFunc("/", t.GetByCategoryId).
+	router.HandleFunc("", t.GetByCategoryId).
 		Methods(http.MethodGet).
 		Queries("category_id", "{category_id:[0-9]+}")
 
 	router.HandleFunc("", t.Get).
 		Methods(http.MethodGet)
 
-	router.HandleFunc("/{id:[0-9]+}", t.Update).
+	authorizedOnly.HandleFunc("/{id:[0-9]+}", t.Update).
 		Methods(http.MethodPut)
 
-	router.HandleFunc("/{id:[0-9]+}", t.Delete).
+	authorizedOnly.HandleFunc("/{id:[0-9]+}", t.Delete).
 		Methods(http.MethodDelete)
 }
 
@@ -89,7 +102,7 @@ func (t Transport) Create(
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
-	id, err := t.useCase.Create(ctx, data)
+	id, err := t.product.Create(ctx, data)
 	if err != nil {
 		t.logger.Warn(err)
 
@@ -125,7 +138,7 @@ func (t Transport) GetByCategoryId(
 		Offset: offset,
 	}
 
-	categoryId, err := transport.StringToInt(r.URL.Query().Get("university_id"))
+	categoryId, err := transport.StringToInt(r.URL.Query().Get("category_id"))
 	if err != nil || categoryId == 0 {
 		transport.Error(
 			w,
@@ -139,7 +152,7 @@ func (t Transport) GetByCategoryId(
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
-	products, err := t.useCase.GetByCategoryId(ctx, data, categoryId)
+	products, err := t.product.GetByCategoryId(ctx, data, categoryId)
 	if err != nil {
 		t.logger.Warn(err)
 
@@ -178,7 +191,7 @@ func (t Transport) Get(
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
-	products, err := t.useCase.Get(ctx, data)
+	products, err := t.product.Get(ctx, data)
 	if err != nil {
 		t.logger.Warn(err)
 
@@ -232,7 +245,7 @@ func (t Transport) Update(
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
-	id, err := t.useCase.Update(ctx, data)
+	id, err := t.product.Update(ctx, data)
 	if err != nil {
 		t.logger.Warn(err)
 
@@ -263,7 +276,7 @@ func (t Transport) Delete(
 	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
 	defer cancel()
 
-	id, err := t.useCase.Delete(ctx, productId)
+	id, err := t.product.Delete(ctx, productId)
 	if err != nil {
 		t.logger.Warn(err)
 

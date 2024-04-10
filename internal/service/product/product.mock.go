@@ -17,46 +17,46 @@ import (
 	gomock "go.uber.org/mock/gomock"
 )
 
-// MockRepository is a mock of Repository interface.
-type MockRepository struct {
+// Mockrepository is a mock of repository interface.
+type Mockrepository struct {
 	ctrl     *gomock.Controller
-	recorder *MockRepositoryMockRecorder
+	recorder *MockrepositoryMockRecorder
 }
 
-// MockRepositoryMockRecorder is the mock recorder for MockRepository.
-type MockRepositoryMockRecorder struct {
-	mock *MockRepository
+// MockrepositoryMockRecorder is the mock recorder for Mockrepository.
+type MockrepositoryMockRecorder struct {
+	mock *Mockrepository
 }
 
-// NewMockRepository creates a new mock instance.
-func NewMockRepository(ctrl *gomock.Controller) *MockRepository {
-	mock := &MockRepository{ctrl: ctrl}
-	mock.recorder = &MockRepositoryMockRecorder{mock}
+// NewMockrepository creates a new mock instance.
+func NewMockrepository(ctrl *gomock.Controller) *Mockrepository {
+	mock := &Mockrepository{ctrl: ctrl}
+	mock.recorder = &MockrepositoryMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockRepository) EXPECT() *MockRepositoryMockRecorder {
+func (m *Mockrepository) EXPECT() *MockrepositoryMockRecorder {
 	return m.recorder
 }
 
 // Create mocks base method.
-func (m *MockRepository) Create(arg0 context.Context, arg1 dto.CreateProduct) (int, error) {
+func (m *Mockrepository) Create(arg0 context.Context, arg1 dto.CreateProduct, arg2 dto.Category) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0, arg1)
+	ret := m.ctrl.Call(m, "Create", arg0, arg1, arg2)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockRepositoryMockRecorder) Create(arg0, arg1 any) *gomock.Call {
+func (mr *MockrepositoryMockRecorder) Create(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRepository)(nil).Create), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*Mockrepository)(nil).Create), arg0, arg1, arg2)
 }
 
 // Delete mocks base method.
-func (m *MockRepository) Delete(arg0 context.Context, arg1 int) (int, error) {
+func (m *Mockrepository) Delete(arg0 context.Context, arg1 dto.Product) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Delete", arg0, arg1)
 	ret0, _ := ret[0].(int)
@@ -65,13 +65,13 @@ func (m *MockRepository) Delete(arg0 context.Context, arg1 int) (int, error) {
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockRepositoryMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
+func (mr *MockrepositoryMockRecorder) Delete(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockRepository)(nil).Delete), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*Mockrepository)(nil).Delete), arg0, arg1)
 }
 
 // Get mocks base method.
-func (m *MockRepository) Get(arg0 context.Context, arg1 dto.GetProduct) ([]dto.Product, error) {
+func (m *Mockrepository) Get(arg0 context.Context, arg1 dto.GetProduct) ([]dto.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Get", arg0, arg1)
 	ret0, _ := ret[0].([]dto.Product)
@@ -80,13 +80,13 @@ func (m *MockRepository) Get(arg0 context.Context, arg1 dto.GetProduct) ([]dto.P
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockRepositoryMockRecorder) Get(arg0, arg1 any) *gomock.Call {
+func (mr *MockrepositoryMockRecorder) Get(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockRepository)(nil).Get), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*Mockrepository)(nil).Get), arg0, arg1)
 }
 
 // GetByCategoryId mocks base method.
-func (m *MockRepository) GetByCategoryId(arg0 context.Context, arg1 dto.GetProduct, arg2 int) ([]dto.Product, error) {
+func (m *Mockrepository) GetByCategoryId(arg0 context.Context, arg1 dto.GetProduct, arg2 dto.Category) ([]dto.Product, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByCategoryId", arg0, arg1, arg2)
 	ret0, _ := ret[0].([]dto.Product)
@@ -95,22 +95,37 @@ func (m *MockRepository) GetByCategoryId(arg0 context.Context, arg1 dto.GetProdu
 }
 
 // GetByCategoryId indicates an expected call of GetByCategoryId.
-func (mr *MockRepositoryMockRecorder) GetByCategoryId(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockrepositoryMockRecorder) GetByCategoryId(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByCategoryId", reflect.TypeOf((*MockRepository)(nil).GetByCategoryId), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByCategoryId", reflect.TypeOf((*Mockrepository)(nil).GetByCategoryId), arg0, arg1, arg2)
+}
+
+// GetById mocks base method.
+func (m *Mockrepository) GetById(arg0 context.Context, arg1 int) (dto.Product, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetById", arg0, arg1)
+	ret0, _ := ret[0].(dto.Product)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetById indicates an expected call of GetById.
+func (mr *MockrepositoryMockRecorder) GetById(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*Mockrepository)(nil).GetById), arg0, arg1)
 }
 
 // Update mocks base method.
-func (m *MockRepository) Update(arg0 context.Context, arg1 dto.UpdateProduct) (int, error) {
+func (m *Mockrepository) Update(arg0 context.Context, arg1 dto.UpdateProduct, arg2 dto.Product, arg3 dto.Category) (int, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Update", arg0, arg1)
+	ret := m.ctrl.Call(m, "Update", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(int)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Update indicates an expected call of Update.
-func (mr *MockRepositoryMockRecorder) Update(arg0, arg1 any) *gomock.Call {
+func (mr *MockrepositoryMockRecorder) Update(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockRepository)(nil).Update), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*Mockrepository)(nil).Update), arg0, arg1, arg2, arg3)
 }

@@ -6,31 +6,39 @@ import (
 	"github.com/jackvonhouse/product-catalog/pkg/log"
 )
 
-type service interface {
-	Create(context.Context, dto.CreateProduct) (int, error)
+type productService interface {
+	Create(context.Context, dto.CreateProduct, dto.Category) (int, error)
 
 	Get(context.Context, dto.GetProduct) ([]dto.Product, error)
-	GetByCategoryId(context.Context, dto.GetProduct, int) ([]dto.Product, error)
+	GetById(context.Context, int) (dto.Product, error)
+	GetByCategoryId(context.Context, dto.GetProduct, dto.Category) ([]dto.Product, error)
 
-	Update(context.Context, dto.UpdateProduct) (int, error)
+	Update(context.Context, dto.UpdateProduct, dto.Category) (int, error)
 
 	Delete(context.Context, int) (int, error)
 }
 
+type categoryService interface {
+	GetById(context.Context, int) (dto.Category, error)
+}
+
 type UseCase struct {
-	product service
+	product  productService
+	category categoryService
 
 	logger log.Logger
 }
 
 func New(
-	service service,
+	service productService,
+	category categoryService,
 	logger log.Logger,
 ) UseCase {
 
 	return UseCase{
-		product: service,
-		logger:  logger.WithField("unit", "product"),
+		product:  service,
+		category: category,
+		logger:   logger.WithField("unit", "product"),
 	}
 }
 
@@ -39,7 +47,14 @@ func (u UseCase) Create(
 	data dto.CreateProduct,
 ) (int, error) {
 
-	return u.product.Create(ctx, data)
+	category, err := u.category.GetById(ctx, data.CategoryId)
+	if err != nil {
+		u.logger.Warnf("category not found: %s", err)
+
+		return 0, err
+	}
+
+	return u.product.Create(ctx, data, category)
 }
 
 func (u UseCase) Get(
@@ -56,7 +71,14 @@ func (u UseCase) GetByCategoryId(
 	categoryId int,
 ) ([]dto.Product, error) {
 
-	return u.product.GetByCategoryId(ctx, data, categoryId)
+	category, err := u.category.GetById(ctx, categoryId)
+	if err != nil {
+		u.logger.Warnf("category not found: %s", err)
+
+		return []dto.Product{}, err
+	}
+
+	return u.product.GetByCategoryId(ctx, data, category)
 }
 
 func (u UseCase) Update(
@@ -64,7 +86,14 @@ func (u UseCase) Update(
 	data dto.UpdateProduct,
 ) (int, error) {
 
-	return u.product.Update(ctx, data)
+	category, err := u.category.GetById(ctx, data.NewCategoryId)
+	if err != nil {
+		u.logger.Warnf("category not found: %s", err)
+
+		return 0, err
+	}
+
+	return u.product.Update(ctx, data, category)
 }
 
 func (u UseCase) Delete(

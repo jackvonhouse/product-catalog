@@ -9,7 +9,7 @@ type logNullAdapter struct {
 	*logrus.Entry
 }
 
-func NewLogNullLogger() Logger {
+func NewNullLogger() Logger {
 	logger := logrus.New()
 
 	logger.SetOutput(io.Discard)
