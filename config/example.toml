@@ -13,12 +13,15 @@ password = "catalog-admin-password"
 database_name = "catalog"
 ssl_mode = "disable"
 
-[token]
+[database.cache]
+token_expire_duration = 720
+cleanup_interval = 1440
 
-secret = "secretkey"
+[token]
+secret = "secret"
 
 [token.access]
 exp = 60
 
 [token.refresh]
-exp = 1
+exp = 720
