@@ -65,6 +65,19 @@ func (t Transport) Handle(
 		Methods(http.MethodDelete)
 }
 
+// Create godoc
+// @Summary			Создать категорию
+// @Description		Создание категории
+// @Security		Bearer
+// @Accept			json
+// @Produce			json
+// @Param			request body dto.CreateCategory true "Данные о категории"
+// @Success			200 {object} object{id=int}
+// @Failure			401 {object} object{error=string} "Пользователь не авторизован"
+// @Failure			409 {object} object{error=string} "Категория уже существует"
+// @Failure			500 {object} object{error=string} "Неизвестная ошибка"
+// @Tags			Категория
+// @Router /category [post]
 func (t Transport) Create(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -108,6 +121,18 @@ func (t Transport) Create(
 	transport.Response(w, map[string]any{"id": id})
 }
 
+// Get godoc
+// @Summary			Получить категории
+// @Description		Получение категорий
+// @Accept			json
+// @Produce			json
+// @Param			limit path int false "Лимит"
+// @Param			offset path int false "Смещение"
+// @Success			200 {array} dto.Category
+// @Failure			404 {object} object{error=string} "Категории отсутствуют"
+// @Failure			500 {object} object{error=string} "Неизвестная ошибка"
+// @Tags			Категория
+// @Router /category [get]
 func (t Transport) Get(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -147,6 +172,21 @@ func (t Transport) Get(
 	transport.Response(w, categories)
 }
 
+// Update godoc
+// @Summary			Обновить категорию
+// @Description		Обновление категории
+// @Security		Bearer
+// @Accept			json
+// @Produce			json
+// @Param			request body dto.UpdateCategory true "Данные о категории"
+// @Param			id path int true "Идентификатор категории"
+// @Success			200 {object} object{id=int}
+// @Failure			401 {object} object{error=string} "Пользователь не авторизован"
+// @Failure			404 {object} object{error=string} "Категория не найдена"
+// @Failure			409 {object} object{error=string} "Категория уже существует"
+// @Failure			500 {object} object{error=string} "Неизвестная ошибка"
+// @Tags			Категория
+// @Router /category/{id} [put]
 func (t Transport) Update(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -201,6 +241,19 @@ func (t Transport) Update(
 	transport.Response(w, map[string]any{"id": id})
 }
 
+// Delete godoc
+// @Summary			Удалить категорию
+// @Description		Удаление категории
+// @Security		Bearer
+// @Accept			json
+// @Produce			json
+// @Param			id path int true "Идентификатор категории"
+// @Success			200 {object} object{id=int}
+// @Failure			401 {object} object{error=string} "Пользователь не авторизован"
+// @Failure			404 {object} object{error=string} "Категория не найдена"
+// @Failure			500 {object} object{error=string} "Неизвестная ошибка"
+// @Tags			Категория
+// @Router /category/{id} [delete]
 func (t Transport) Delete(
 	w http.ResponseWriter,
 	r *http.Request,

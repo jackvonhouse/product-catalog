@@ -3,11 +3,13 @@ package transport
 import (
 	"github.com/gorilla/mux"
 	"github.com/jackvonhouse/product-catalog/app/usecase"
+	_ "github.com/jackvonhouse/product-catalog/docs"
 	"github.com/jackvonhouse/product-catalog/internal/transport/auth"
 	"github.com/jackvonhouse/product-catalog/internal/transport/category"
 	"github.com/jackvonhouse/product-catalog/internal/transport/product"
 	"github.com/jackvonhouse/product-catalog/internal/transport/router"
 	"github.com/jackvonhouse/product-catalog/pkg/log"
+	"github.com/swaggo/http-swagger/v2"
 )
 
 type Transport struct {
@@ -28,6 +30,12 @@ func New(
 		"/category": category.New(useCase.Category, useCase.AccessToken, transportLogger),
 		"/user":     auth.New(useCase.Auth, transportLogger),
 	})
+
+	r.Router().
+		PathPrefix("/swagger").
+		Handler(
+			httpSwagger.WrapHandler,
+		)
 
 	return Transport{
 		router: r,

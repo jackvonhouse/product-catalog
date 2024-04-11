@@ -10,6 +10,18 @@ import (
 	"github.com/jackvonhouse/product-catalog/pkg/shutdown"
 )
 
+//	@title			Каталог товаров
+//	@version		1.0
+//	@description	Простейшее API для каталога товаров
+
+//	@host		localhost:8081
+//	@BasePath	/api/v1
+
+// @securityDefinitions.apikey	Bearer
+// @in							header
+// @name						Authorization
+//	@description				Авторизация при помощи JWT-токена
+
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

@@ -50,6 +50,17 @@ func (t Transport) Handle(
 		Methods(http.MethodPost)
 }
 
+// SignUp godoc
+// @Summary			Регистрация
+// @Description		Регистрация нового пользователя
+// @Accept			json
+// @Produce			json
+// @Param			request body object{username=string,password=string} true "Данные пользователя"
+// @Success			200 {object} dto.TokenPair
+// @Failure			409 {object} object{error=string} "Пользователь уже существует"
+// @Failure			500 {object} object{error=string} "Неизвестная ошибка"
+// @Tags			Авторизация
+// @Router /user/sign-up [post]
 func (t Transport) SignUp(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -100,6 +111,16 @@ func (t Transport) SignUp(
 	transport.Response(w, tokenPair)
 }
 
+// SignIn godoc
+// @Summary			Авторизация
+// @Description		Авторизация пользователя
+// @Accept			json
+// @Produce			json
+// @Param			request body object{username=string,password=string} true "Данные пользователя"
+// @Success			200 {object} dto.TokenPair
+// @Failure			500 {object} object{error=string} "Неизвестная ошибка"
+// @Tags			Авторизация
+// @Router /user/sign-in [post]
 func (t Transport) SignIn(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -140,6 +161,16 @@ func (t Transport) SignIn(
 	transport.Response(w, tokenPair)
 }
 
+// Refresh godoc
+// @Summary			Обновление токенов
+// @Description		Обновление токенов
+// @Accept			json
+// @Produce			json
+// @Param			request body object{access_token=string,refresh_token=string} true "Пара токенов"
+// @Success			200 {object} dto.TokenPair
+// @Failure			500 {object} object{error=string} "Неизвестная ошибка"
+// @Tags			Авторизация
+// @Router /user/refresh [post]
 func (t Transport) Refresh(
 	w http.ResponseWriter,
 	r *http.Request,

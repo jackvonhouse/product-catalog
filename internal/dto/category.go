@@ -1,8 +1,8 @@
 package dto
 
 type Category struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
+	ID   int    `json:"id" default:"1"`
+	Name string `json:"name" default:"Категория"`
 }
 
 type CreateCategory struct {
