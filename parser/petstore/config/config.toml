@@ -1,0 +1,12 @@
+[api]
+
+parse_period = 1
+
+[api.external]
+source = "https://petstore.swagger.io/v2/pet/findByStatus?status=available"
+duration = 1440
+
+[api.internal]
+username = "root"
+password = "toor"
+source = "http://localhost:8081"
