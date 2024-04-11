@@ -2,23 +2,24 @@ package user
 
 import (
 	"context"
-	"crypto/md5"
-	"fmt"
+	"database/sql"
+	sq "github.com/Masterminds/squirrel"
+	pgerr "github.com/jackc/pgerrcode"
 	"github.com/jackvonhouse/product-catalog/internal/dto"
+	errpkg "github.com/jackvonhouse/product-catalog/pkg/errors"
 	"github.com/jackvonhouse/product-catalog/pkg/log"
-	"github.com/patrickmn/go-cache"
-	"io"
-	"strings"
+	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 type Repository struct {
 	logger log.Logger
 
-	db *cache.Cache
+	db *sqlx.DB
 }
 
 func New(
-	db *cache.Cache,
+	db *sqlx.DB,
 	logger log.Logger,
 ) Repository {
 
@@ -29,62 +30,56 @@ func New(
 }
 
 func (r Repository) Create(
-	_ context.Context,
+	ctx context.Context,
 	credentials dto.Credentials,
-) (string, error) {
+) (int, error) {
 
-	r.db.DeleteExpired()
-
-	logger := r.logger.WithFields(map[string]any{
-		"username": credentials.Username,
-		"password": "***",
-	})
-
-	userId := r.usernameToHash(credentials.Username)
-
-	value := map[string]string{
-		"username": credentials.Username,
-		"password": credentials.Password,
-	}
-
-	if err := r.db.Add(userId, value, cache.NoExpiration); err != nil {
-		if strings.Contains(err.Error(), "already exists") {
-			logger.Warnf("user already exists: %s", err)
-
-			return "", r.errUserAlreadyExists(err)
-		}
-	}
-
-	return userId, nil
-}
-
-func (r Repository) GetById(
-	_ context.Context,
-	id string,
-) (dto.User, error) {
+	query, args, err := sq.
+		Insert(`"user"`).
+		Columns("username", "password").
+		Values(credentials.Username, credentials.Password).
+		Suffix("RETURNING id").
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
 	logger := r.logger.WithFields(map[string]any{
-		"user": map[string]string{
-			"id": id,
+		"query": query,
+		"args": map[string]any{
+			"username": credentials.Username,
+			"password": "***",
 		},
 	})
 
-	value, ok := r.db.Get(id)
-	if !ok {
-		logger.Warn("user not found")
+	if err != nil {
+		logger.Warnf("unknown error on building sql query: %s", err)
 
-		return dto.User{}, r.errNotFound("user", nil)
+		return 0, r.errInternalBuildSql(err)
 	}
 
-	userMap := value.(map[string]string)
+	var userId int
 
-	user := dto.User{
-		ID:       id,
-		Username: userMap["username"],
-		Password: userMap["password"],
+	if err := r.db.GetContext(ctx, &userId, query, args...); err != nil {
+		if e, ok := err.(*pq.Error); ok {
+			switch e.Code {
+
+			case pgerr.UniqueViolation:
+				logger.Warnf("user already exists: %s", err)
+
+				return 0, r.errUserAlreadyExists(err)
+
+			default:
+				logger.Warnf("unknown error on creating user: %s", err)
+
+				return 0, r.errInternalCreateUser(err)
+			}
+		}
+
+		logger.Warnf("unknown error on creating user: %s", err)
+
+		return 0, r.errInternalCreateUser(err)
 	}
 
-	return user, nil
+	return userId, nil
 }
 
 func (r Repository) GetByUsername(
@@ -92,18 +87,39 @@ func (r Repository) GetByUsername(
 	username string,
 ) (dto.User, error) {
 
-	userId := r.usernameToHash(username)
+	query, args, err := sq.
+		Select("*").
+		From(`"user"`).
+		Where(sq.Eq{"username": username}).
+		PlaceholderFormat(sq.Dollar).
+		ToSql()
 
-	return r.GetById(ctx, userId)
-}
+	logger := r.logger.WithFields(map[string]any{
+		"query": query,
+		"args": map[string]any{
+			"username": username,
+		},
+	})
 
-func (r Repository) usernameToHash(
-	username string,
-) string {
+	if err != nil {
+		logger.Warnf("unknown error on building sql query: %s", err)
 
-	h := md5.New()
-	_, _ = io.WriteString(h, username)
-	hashSum := h.Sum(nil)
+		return dto.User{}, r.errInternalBuildSql(err)
+	}
 
-	return fmt.Sprintf("%x", hashSum)
+	user := dto.User{}
+
+	if err := r.db.GetContext(ctx, &user, query, args...); err != nil {
+		if !errpkg.Is(err, sql.ErrNoRows) {
+			logger.Warnf("unknown error on getting user: %s", err)
+
+			return dto.User{}, r.errInternalGetUser(err)
+		}
+
+		logger.Warnf("user not found: %s", err)
+
+		return dto.User{}, r.errNotFound("user", err)
+	}
+
+	return user, nil
 }

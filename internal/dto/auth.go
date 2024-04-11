@@ -10,14 +10,16 @@ type Registration struct {
 }
 
 type RefreshToken struct {
-	ID             string `json:"id"`
-	Token          string `json:"jwt"`
+	ID             string `json:"id" db:"id"`
+	Token          string `json:"jwt" db:"token"`
+	UserId         int    `json:"user_id" db:"user_id"`
+	ExpireAt       int64  `json:"-" db:"expire_at"`
 	ExpireDuration int    `json:"expire_duration"`
 }
 
 type AccessToken struct {
 	Username       string `json:"username"`
-	RefreshTokenId string `json:"refresh_token_id"`
+	RefreshTokenId int    `json:"refresh_token_id"`
 }
 
 type TokenPair struct {

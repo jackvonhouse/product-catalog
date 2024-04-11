@@ -37,11 +37,11 @@ func New(
 			repositoryLogger,
 		),
 		RefreshToken: refresh.New(
-			infrastructure.Cache.Database(),
+			infrastructure.Postgres.Database(),
 			repositoryLogger,
 		),
 		User: user.New(
-			infrastructure.Cache.Database(),
+			infrastructure.Postgres.Database(),
 			repositoryLogger,
 		),
 

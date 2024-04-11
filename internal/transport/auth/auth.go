@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"encoding/json"
-	"github.com/jackvonhouse/product-catalog/internal/transport/middleware"
 	"github.com/jackvonhouse/product-catalog/internal/transport/validator"
 	"net/http"
 	"time"
@@ -15,31 +14,24 @@ import (
 )
 
 type useCaseAuth interface {
-	SignUp(context.Context, dto.Credentials) (dto.TokenPair, string, error)
-	SignIn(context.Context, dto.Credentials, string) (dto.TokenPair, error)
+	SignUp(context.Context, dto.Credentials) (dto.TokenPair, error)
+	SignIn(context.Context, dto.Credentials) (dto.TokenPair, error)
 	Refresh(context.Context, dto.TokenPair) (dto.TokenPair, error)
-}
-
-type useCaseAccessToken interface {
-	Verify(context.Context, string) error
 }
 
 type Transport struct {
 	useCase useCaseAuth
 
-	mw     middleware.Middleware
 	logger log.Logger
 }
 
 func New(
 	auth useCaseAuth,
-	accessToken useCaseAccessToken,
 	logger log.Logger,
 ) Transport {
 
 	return Transport{
 		useCase: auth,
-		mw:      middleware.New(accessToken, logger),
 		logger:  logger.WithField("layer", "transport"),
 	}
 }
@@ -48,10 +40,7 @@ func (t Transport) Handle(
 	router *mux.Router,
 ) {
 
-	authorizedOnly := router.PathPrefix("").Subrouter()
-	authorizedOnly.Use(t.mw.AuthorizedOnly)
-
-	authorizedOnly.HandleFunc("/sign-in", t.SignIn).
+	router.HandleFunc("/sign-in", t.SignIn).
 		Methods(http.MethodPost)
 
 	router.HandleFunc("/sign-up", t.SignUp).
@@ -97,7 +86,7 @@ func (t Transport) SignUp(
 		Password: data.Password,
 	}
 
-	tokenPair, _, err := t.useCase.SignUp(ctx, signUp)
+	tokenPair, err := t.useCase.SignUp(ctx, signUp)
 	if err != nil {
 		t.logger.Warn(err)
 
@@ -109,15 +98,6 @@ func (t Transport) SignUp(
 	}
 
 	transport.Response(w, tokenPair)
-	//transport.Response(w, map[string]any{
-	//	"token": map[string]string{
-	//		"access":  tokenPair.AccessToken,
-	//		"refresh": tokenPair.RefreshToken,
-	//	},
-	//	"user": map[string]string{
-	//		"id": userId,
-	//	},
-	//})
 }
 
 func (t Transport) SignIn(
@@ -146,9 +126,7 @@ func (t Transport) SignIn(
 		Password: data.Password,
 	}
 
-	accessToken := r.Context().Value("access_token").(string)
-
-	tokenPair, err := t.useCase.SignIn(ctx, signIn, accessToken)
+	tokenPair, err := t.useCase.SignIn(ctx, signIn)
 	if err != nil {
 		t.logger.Warn(err)
 
