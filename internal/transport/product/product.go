@@ -73,6 +73,19 @@ func (t Transport) Handle(
 		Methods(http.MethodDelete)
 }
 
+// Create godoc
+// @Summary			Создать товар
+// @Description		Создание товара с определённой категорией
+// @Security		Bearer
+// @Accept			json
+// @Produce			json
+// @Param			request body dto.CreateProduct true "Данные о товаре"
+// @Success			200 {object} object{id=int}
+// @Failure			401 {object} object{error=string} "Пользователь не авторизован"
+// @Failure			409 {object} object{error=string} "Товар уже существует"
+// @Failure			500 {object} object{error=string} "Неизвестная ошибка"
+// @Tags			Товар
+// @Router /product [post]
 func (t Transport) Create(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -166,6 +179,19 @@ func (t Transport) GetByCategoryId(
 	transport.Response(w, products)
 }
 
+// Get godoc
+// @Summary			Получить товары
+// @Description		Получение товаров
+// @Accept			json
+// @Produce			json
+// @Param			limit path int false "Лимит"
+// @Param			offset path int false "Смещение"
+// @Param			category_id path int false "Идентификатор категории"
+// @Success			200 {array} dto.Product
+// @Failure			404 {object} object{error=string} "Товары отсутствуют или категория не найдена"
+// @Failure			500 {object} object{error=string} "Неизвестная ошибка"
+// @Tags			Товар
+// @Router /product [get]
 func (t Transport) Get(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -205,6 +231,21 @@ func (t Transport) Get(
 	transport.Response(w, products)
 }
 
+// Update godoc
+// @Summary			Обновить товар
+// @Description		Обновление товара
+// @Security		Bearer
+// @Accept			json
+// @Produce			json
+// @Param			request body dto.UpdateProduct true "Данные о товаре"
+// @Param			id path int true "Идентификатор товара"
+// @Success			200 {object} object{id=int}
+// @Failure			401 {object} object{error=string} "Пользователь не авторизован"
+// @Failure			404 {object} object{error=string} "Товар или категория не найдены"
+// @Failure			409 {object} object{error=string} "Товар уже существует"
+// @Failure			500 {object} object{error=string} "Неизвестная ошибка"
+// @Tags			Товар
+// @Router /product/{id} [put]
 func (t Transport) Update(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -259,6 +300,19 @@ func (t Transport) Update(
 	transport.Response(w, map[string]any{"id": id})
 }
 
+// Delete godoc
+// @Summary			Удалить товар
+// @Description		Удаление товара
+// @Security		Bearer
+// @Accept			json
+// @Produce			json
+// @Param			id path int true "Идентификатор товара"
+// @Success			200 {object} object{id=int}
+// @Failure			401 {object} object{error=string} "Пользователь не авторизован"
+// @Failure			404 {object} object{error=string} "Товар не найден"
+// @Failure			500 {object} object{error=string} "Неизвестная ошибка"
+// @Tags			Товар
+// @Router /product/{id} [delete]
 func (t Transport) Delete(
 	w http.ResponseWriter,
 	r *http.Request,

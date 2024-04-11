@@ -1,13 +1,13 @@
 package dto
 
 type Product struct {
-	ID   int    `json:"id" db:"id"`
-	Name string `json:"name" db:"name"`
+	ID   int    `json:"id" db:"id" default:"1"`
+	Name string `json:"name" db:"name" default:"Товар"`
 }
 
 type CreateProduct struct {
-	Name       string `json:"name"`
-	CategoryId int    `json:"category_id"`
+	Name       string `json:"name" default:"Товар"`
+	CategoryId int    `json:"category_id" default:"1"`
 }
 
 type GetProduct struct {

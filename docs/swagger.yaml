@@ -1,0 +1,572 @@
+basePath: /api/v1
+definitions:
+  github_com_jackvonhouse_product-catalog_internal_dto.Category:
+    properties:
+      id:
+        default: 1
+        type: integer
+      name:
+        default: Категория
+        type: string
+    type: object
+  github_com_jackvonhouse_product-catalog_internal_dto.CreateCategory:
+    properties:
+      name:
+        type: string
+    type: object
+  github_com_jackvonhouse_product-catalog_internal_dto.CreateProduct:
+    properties:
+      category_id:
+        default: 1
+        type: integer
+      name:
+        default: Товар
+        type: string
+    type: object
+  github_com_jackvonhouse_product-catalog_internal_dto.Product:
+    properties:
+      id:
+        default: 1
+        type: integer
+      name:
+        default: Товар
+        type: string
+    type: object
+  github_com_jackvonhouse_product-catalog_internal_dto.TokenPair:
+    properties:
+      access_token:
+        type: string
+      refresh_token:
+        type: string
+    type: object
+  github_com_jackvonhouse_product-catalog_internal_dto.UpdateCategory:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  github_com_jackvonhouse_product-catalog_internal_dto.UpdateProduct:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      new_category_id:
+        type: integer
+      old_category_id:
+        type: integer
+    type: object
+host: localhost:8081
+info:
+  contact: {}
+  description: Простейшее API для каталога товаров
+  title: Каталог товаров
+  version: "1.0"
+paths:
+  /category:
+    get:
+      consumes:
+      - application/json
+      description: Получение категорий
+      parameters:
+      - description: Лимит
+        in: path
+        name: limit
+        type: integer
+      - description: Смещение
+        in: path
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_jackvonhouse_product-catalog_internal_dto.Category'
+            type: array
+        "404":
+          description: Категории отсутствуют
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Неизвестная ошибка
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Получить категории
+      tags:
+      - Категория
+    post:
+      consumes:
+      - application/json
+      description: Создание категории
+      parameters:
+      - description: Данные о категории
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jackvonhouse_product-catalog_internal_dto.CreateCategory'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              id:
+                type: integer
+            type: object
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "409":
+          description: Категория уже существует
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Неизвестная ошибка
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Создать категорию
+      tags:
+      - Категория
+  /category/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаление категории
+      parameters:
+      - description: Идентификатор категории
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              id:
+                type: integer
+            type: object
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Категория не найдена
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Неизвестная ошибка
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Удалить категорию
+      tags:
+      - Категория
+    put:
+      consumes:
+      - application/json
+      description: Обновление категории
+      parameters:
+      - description: Данные о категории
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jackvonhouse_product-catalog_internal_dto.UpdateCategory'
+      - description: Идентификатор категории
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              id:
+                type: integer
+            type: object
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Категория не найдена
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "409":
+          description: Категория уже существует
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Неизвестная ошибка
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Обновить категорию
+      tags:
+      - Категория
+  /product:
+    get:
+      consumes:
+      - application/json
+      description: Получение товаров
+      parameters:
+      - description: Лимит
+        in: path
+        name: limit
+        type: integer
+      - description: Смещение
+        in: path
+        name: offset
+        type: integer
+      - description: Идентификатор категории
+        in: path
+        name: category_id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/github_com_jackvonhouse_product-catalog_internal_dto.Product'
+            type: array
+        "404":
+          description: Товары отсутствуют или категория не найдена
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Неизвестная ошибка
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Получить товары
+      tags:
+      - Товар
+    post:
+      consumes:
+      - application/json
+      description: Создание товара с определённой категорией
+      parameters:
+      - description: Данные о товаре
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jackvonhouse_product-catalog_internal_dto.CreateProduct'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              id:
+                type: integer
+            type: object
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "409":
+          description: Товар уже существует
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Неизвестная ошибка
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Создать товар
+      tags:
+      - Товар
+  /product/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Удаление товара
+      parameters:
+      - description: Идентификатор товара
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              id:
+                type: integer
+            type: object
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Товар не найден
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Неизвестная ошибка
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Удалить товар
+      tags:
+      - Товар
+    put:
+      consumes:
+      - application/json
+      description: Обновление товара
+      parameters:
+      - description: Данные о товаре
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_jackvonhouse_product-catalog_internal_dto.UpdateProduct'
+      - description: Идентификатор товара
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              id:
+                type: integer
+            type: object
+        "401":
+          description: Пользователь не авторизован
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "404":
+          description: Товар или категория не найдены
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "409":
+          description: Товар уже существует
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Неизвестная ошибка
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      security:
+      - Bearer: []
+      summary: Обновить товар
+      tags:
+      - Товар
+  /user/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Обновление токенов
+      parameters:
+      - description: Пара токенов
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            access_token:
+              type: string
+            refresh_token:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_jackvonhouse_product-catalog_internal_dto.TokenPair'
+        "500":
+          description: Неизвестная ошибка
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Обновление токенов
+      tags:
+      - Авторизация
+  /user/sign-in:
+    post:
+      consumes:
+      - application/json
+      description: Авторизация пользователя
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            password:
+              type: string
+            username:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_jackvonhouse_product-catalog_internal_dto.TokenPair'
+        "500":
+          description: Неизвестная ошибка
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Авторизация
+      tags:
+      - Авторизация
+  /user/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: Регистрация нового пользователя
+      parameters:
+      - description: Данные пользователя
+        in: body
+        name: request
+        required: true
+        schema:
+          properties:
+            password:
+              type: string
+            username:
+              type: string
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_jackvonhouse_product-catalog_internal_dto.TokenPair'
+        "409":
+          description: Пользователь уже существует
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+        "500":
+          description: Неизвестная ошибка
+          schema:
+            properties:
+              error:
+                type: string
+            type: object
+      summary: Регистрация
+      tags:
+      - Авторизация
+securityDefinitions:
+  Bearer:
+    description: Авторизация при помощи JWT-токена
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
