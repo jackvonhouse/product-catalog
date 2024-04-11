@@ -51,7 +51,9 @@ func (m Middleware) AuthorizedOnly(next http.Handler) http.Handler {
 		)
 
 		if err := m.accessToken.Verify(r.Context(), accessToken); err != nil {
-			m.logger.Warnf("access token verification failed: %s", err)
+			m.logger.
+				WithField("token", accessToken).
+				Warnf("access token verification failed: %s", err)
 
 			code, msg := transport.ErrorToHttpResponse(err)
 

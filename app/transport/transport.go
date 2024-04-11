@@ -26,7 +26,7 @@ func New(
 	r.Handle(map[string]router.Handlify{
 		"/product":  product.New(useCase.Product, useCase.AccessToken, transportLogger),
 		"/category": category.New(useCase.Category, useCase.AccessToken, transportLogger),
-		"/user":     auth.New(useCase.Auth, useCase.AccessToken, transportLogger),
+		"/user":     auth.New(useCase.Auth, transportLogger),
 	})
 
 	return Transport{
