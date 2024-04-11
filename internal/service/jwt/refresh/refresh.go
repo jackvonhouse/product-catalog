@@ -16,11 +16,11 @@ const (
 )
 
 type repository interface {
-	Create(context.Context, dto.User, dto.RefreshToken) (string, error)
+	Create(context.Context, dto.User, dto.RefreshToken) (int, error)
 
-	GetById(context.Context, string) (dto.RefreshToken, error)
+	GetById(context.Context, int) (dto.RefreshToken, error)
 
-	Delete(context.Context, string) error
+	DeleteByUserId(context.Context, int) error
 }
 
 type Service struct {
@@ -47,11 +47,11 @@ func New(
 func (s Service) Create(
 	ctx context.Context,
 	user dto.User,
-) (string, string, error) {
+) (int, string, error) {
 
 	token, hashedToken, err := s.generateRefresh()
 	if err != nil {
-		return "", "", err
+		return 0, "", err
 	}
 
 	refreshToken := dto.RefreshToken{
@@ -59,25 +59,25 @@ func (s Service) Create(
 		ExpireDuration: s.expireDuration,
 	}
 
-	refreshTokenId, err := s.repository.Create(ctx, user, refreshToken)
+	id, err := s.repository.Create(ctx, user, refreshToken)
 
-	return refreshTokenId, token, err
+	return id, token, err
 }
 
 func (s Service) GetById(
 	ctx context.Context,
-	id string,
+	id int,
 ) (dto.RefreshToken, error) {
 
 	return s.repository.GetById(ctx, id)
 }
 
-func (s Service) Delete(
+func (s Service) DeleteByUserId(
 	ctx context.Context,
-	id string,
+	id int,
 ) error {
 
-	return s.repository.Delete(ctx, id)
+	return s.repository.DeleteByUserId(ctx, id)
 }
 
 func (s Service) Verify(

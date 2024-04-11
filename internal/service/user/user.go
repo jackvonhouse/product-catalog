@@ -9,9 +9,8 @@ import (
 )
 
 type repository interface {
-	Create(context.Context, dto.Credentials) (string, error)
+	Create(context.Context, dto.Credentials) (int, error)
 
-	GetById(context.Context, string) (dto.User, error)
 	GetByUsername(context.Context, string) (dto.User, error)
 }
 
@@ -35,7 +34,7 @@ func New(
 func (s Service) Create(
 	ctx context.Context,
 	credentials dto.Credentials,
-) (string, error) {
+) (int, error) {
 
 	password, err := bcrypt.GenerateFromPassword(
 		[]byte(credentials.Password),
@@ -45,7 +44,7 @@ func (s Service) Create(
 	if err != nil {
 		s.logger.Warnf("can't hash password: %s", err)
 
-		return "", errors.
+		return 0, errors.
 			ErrInternal.
 			New("can't hash password").
 			Wrap(err)
@@ -54,14 +53,6 @@ func (s Service) Create(
 	credentials.Password = string(password)
 
 	return s.repository.Create(ctx, credentials)
-}
-
-func (s Service) GetById(
-	ctx context.Context,
-	userName string,
-) (dto.User, error) {
-
-	return s.repository.GetById(ctx, userName)
 }
 
 func (s Service) GetByUsername(

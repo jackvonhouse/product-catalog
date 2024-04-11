@@ -3,14 +3,12 @@ package infrastructure
 import (
 	"context"
 	"github.com/jackvonhouse/product-catalog/config"
-	"github.com/jackvonhouse/product-catalog/internal/infrastructure/cache"
 	"github.com/jackvonhouse/product-catalog/internal/infrastructure/postgres"
 	"github.com/jackvonhouse/product-catalog/pkg/log"
 )
 
 type Infrastructure struct {
 	Postgres postgres.Database
-	Cache    cache.Database
 }
 
 func New(
@@ -28,10 +26,7 @@ func New(
 		return Infrastructure{}, err
 	}
 
-	c, _ := cache.New(ctx, config.Cache, infrastructureLog)
-
 	return Infrastructure{
 		Postgres: pg,
-		Cache:    c,
 	}, nil
 }

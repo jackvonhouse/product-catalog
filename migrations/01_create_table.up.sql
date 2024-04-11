@@ -24,4 +24,23 @@ CREATE TABLE IF NOT EXISTS product_of_category (
     CONSTRAINT unique_product_of_category UNIQUE (product_id, category_id)
 );
 
+DROP TABLE IF EXISTS "user" CASCADE;
+CREATE TABLE IF NOT EXISTS "user" (
+    id SERIAL PRIMARY KEY,
+    username TEXT NOT NULL,
+    password TEXT NOT NULL,
+
+    CONSTRAINT unique_user UNIQUE (username)
+);
+
+DROP TABLE IF EXISTS refresh CASCADE;
+CREATE TABLE IF NOT EXISTS refresh (
+    id SERIAL PRIMARY KEY,
+    token TEXT NOT NULL,
+    user_id INTEGER NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+    expire_at BIGINT NOT NULL,
+
+    CONSTRAINT unique_refresh UNIQUE (token, user_id)
+);
+
 COMMIT;
