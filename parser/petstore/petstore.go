@@ -2,16 +2,12 @@ package petstore
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/jackvonhouse/product-catalog/parser/petstore/config"
 	"github.com/jackvonhouse/product-catalog/parser/petstore/dto"
 	"github.com/jackvonhouse/product-catalog/pkg/log"
-	jsoniter "github.com/json-iterator/go"
 	"net/http"
-)
-
-var (
-	json = jsoniter.ConfigCompatibleWithStandardLibrary
 )
 
 type serviceStorage interface {

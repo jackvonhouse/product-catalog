@@ -13,16 +13,6 @@ import (
 	"time"
 )
 
-/*
-	Каждые N минут:
-		1. Дёргаем API
-		2. Читаем результат
-		3. Парсим в объекты
-		4. Добавляем в БД*
-
-	* сначала проверяется наличие записи в кеше, затем отправляется запрос на наш сервис
-*/
-
 func main() {
 	logger := log.NewLogrusLogger()
 
@@ -63,7 +53,7 @@ func main() {
 	)
 
 	ticker := time.Tick(
-		time.Duration(cfg.ParsePeriod) * time.Second,
+		time.Duration(cfg.ParsePeriod) * time.Minute,
 	)
 
 	for range ticker {
