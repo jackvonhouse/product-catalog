@@ -9,6 +9,6 @@ mockgen:
 	mockgen -source=internal/transport/category/category.go -destination=internal/transport/category/category.mock.go -package=category
 
 cover:
-	go test ./... -short -count=1 -race -coverprofile=$(COVER) -v -cover
+	go test ./... -short -count=100 -race -coverprofile=$(COVER) -v -cover
 	go tool cover -html=$(COVER)
 	rm -f $(COVER)
