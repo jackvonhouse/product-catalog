@@ -1,0 +1,27 @@
+[server]
+
+[server.http]
+port = 8081
+
+[database]
+
+[database.postgres]
+host = "127.0.0.1"
+port = 5432
+username = "catalog-admin"
+password = "catalog-admin-password"
+database_name = "catalog"
+ssl_mode = "disable"
+
+[database.cache]
+token_expire_duration = 720
+cleanup_interval = 1440
+
+[token]
+secret = "secret"
+
+[token.access]
+exp = 60
+
+[token.refresh]
+exp = 720
